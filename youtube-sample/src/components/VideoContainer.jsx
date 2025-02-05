@@ -5,23 +5,41 @@ import { Link } from "react-router-dom";
 
 const VideoContainer = () => {
   const [videos, setVideos] = useState([]);
-  console.log(videos[0]);
+
   useEffect(() => {
     getVideos();
   }, []);
 
   const getVideos = async () => {
-    const data = await fetch(YOUTUBE_POPULAR_VIDEOS_API);
-    const jsonData = await data.json();
-    setVideos(jsonData.items);
+    try {
+      console.log("Google API Key:", process.env.REACT_APP_GOOGLE_API_KEY);
+      const response = await fetch(YOUTUBE_POPULAR_VIDEOS_API);
+      const jsonData = await response.json();
+      console.log("inside vc ")
+      console.log(jsonData);
+      
+
+      if (jsonData.items) {
+        setVideos(jsonData.items);
+      } else {
+        console.error("No items in API response", jsonData);
+      }
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+    }
   };
+
   return (
     <div className="flex flex-wrap overflow-auto">
-      {videos.map((video) => (
-        <Link key={video.id.videoId} to={"/watch?v=" + video.id.videoId}>
-          <VideoCard info={video} />
-        </Link>
-      ))}
+      {videos.length === 0 ? (
+        <p className="p-4 m-4 font-bold text-3xl ">Loading videos...</p>
+      ) : (
+        videos.map((video) => (
+          <Link key={video.id.videoId} to={"/watch?v=" + video.id.videoId}>
+            <VideoCard info={video} />
+          </Link>
+        ))
+      )}
     </div>
   );
 };

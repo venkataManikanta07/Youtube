@@ -6,7 +6,7 @@ import { IoIosNotifications } from "react-icons/io";
 import { FaVideo } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
-import { YOUTUB_SEARCH_API } from "../utils/constants";
+import { YOUTUBE_SEARCH_API } from "../utils/constants";
 import { cacheResults } from "../utils/searcSlice";
 
 const Head = () => {
@@ -41,16 +41,22 @@ const Head = () => {
   }, []);
 
   const getSearchSuggestions = async () => {
-    const data = await fetch(YOUTUB_SEARCH_API + searchQuery);
-    const json = await data.json();
-    console.log(json);
-    setSuggestions(json[1]);
-    dispatch(
-      cacheResults({
-        [searchQuery]: json[1],
-      })
-    );
+    try {
+      const response = await fetch(YOUTUBE_SEARCH_API + searchQuery);
+      if (!response.ok) throw new Error("Failed to fetch suggestions");
+  
+      const json = await response.json();
+      console.log(json);
+  
+      if (json[1]) {
+        setSuggestions(json[1]);
+        dispatch(cacheResults({ [searchQuery]: json[1] }));
+      }
+    } catch (error) {
+      console.error("Error fetching search suggestions:", error);
+    }
   };
+  
   console.log(searchQuery);
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
